@@ -1,0 +1,33 @@
+version: '2'
+services:
+  db:
+    build: ./db
+    container_name: db
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=registration_db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=admin
+    volumes:
+        - ./data:/var/lib/mysql
+    expose:
+        - "3306" 
+    ports:
+        - "6002:3306"
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=admin --execute \"SHOW DATABASES;\""
+      interval: 2s
+      timeout: 30s
+      retries: 15
+  web:
+    build: ./web
+    container_name: web
+    ports:
+     - "6001:6001"  
+    links:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy 
+    environment:
+     - DATABASE_HOST=db
